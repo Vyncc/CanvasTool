@@ -13,8 +13,6 @@ void CanvasTool::onLoad()
 	_globalCvarManager = cvarManager;
 
 	gameWrapper->RegisterDrawable(std::bind(&CanvasTool::RenderCanvas, this, std::placeholders::_1));
-
-	cvarManager->registerCvar("testcanvas", "yeah lezzz gooo", "woooo");
 }
 
 
