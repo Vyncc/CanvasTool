@@ -4,7 +4,7 @@
 
 
 
-BAKKESMOD_PLUGIN(CanvasTool, "A tool to render and visualize canvas", plugin_version, PLUGINTYPE_FREEPLAY)
+BAKKESMOD_PLUGIN(CanvasTool, "A tool to render and visualize canvas", "1.0.1", PLUGINTYPE_FREEPLAY)
 
 std::shared_ptr<CVarManagerWrapper> _globalCvarManager;
 
@@ -13,6 +13,8 @@ void CanvasTool::onLoad()
 	_globalCvarManager = cvarManager;
 
 	gameWrapper->RegisterDrawable(std::bind(&CanvasTool::RenderCanvas, this, std::placeholders::_1));
+
+	cvarManager->registerCvar("testcanvas", "yeah lezzz gooo", "woooo");
 }
 
 
@@ -141,6 +143,21 @@ void CanvasTool::RenderCanvas(CanvasWrapper canvas)
 		{
 			canvas.SetColor((int)(StringPtr->Color[0] * 255), (int)(StringPtr->Color[1] * 255), (int)(StringPtr->Color[2] * 255), StringPtr->Opacity);
 			canvas.SetPosition(StringPtr->pos);
+			if (StringPtr->loadCvar)
+			{
+				if (!cvarManager->getCvar(std::string(StringPtr->nameBuffer)).IsNull())
+				{
+					StringPtr->Text = cvarManager->getCvar(std::string(StringPtr->nameBuffer)).getStringValue();
+				}
+				else
+				{
+					StringPtr->Text = "N/A";
+				}
+			}
+			else
+			{
+				StringPtr->Text = std::string(StringPtr->nameBuffer);
+			}
 			canvas.DrawString(StringPtr->Text, StringPtr->xScale, StringPtr->yScale, StringPtr->dropShadow, StringPtr->wrapText);
 			//cvarManager->log(StringPtr->Text + " rendered at layer : " + std::to_string(StringPtr->ItemLayer));
 		}

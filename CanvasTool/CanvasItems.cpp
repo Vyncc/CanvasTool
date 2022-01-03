@@ -9,6 +9,7 @@ CanvasDrawString::CanvasDrawString()
 	yScale = 8.f;
 	dropShadow = false;
 	wrapText = false;
+	loadCvar = false;
 	Color[0] = 1;
 	Color[1] = 1;
 	Color[2] = 1;

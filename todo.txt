@@ -1,0 +1,1 @@
+je voudrais pouvoir modifier la position/scale des canvas directement avec la souris

@@ -257,13 +257,21 @@ void CanvasTool::RenderCanvasItems()
 	}
 }
 
-
-
 void CanvasTool::RenderStringDetails(std::shared_ptr<CanvasDrawString> drawString)
 {
-	ImGui::Text("Text : ");
+	if (drawString->loadCvar)
+	{
+		ImGui::Text("Type a cvar : ");
+	}
+	else
+	{
+		ImGui::Text("Text : ");
+	}
 	ImGui::InputTextEx("##name", "", drawString->nameBuffer, sizeof(drawString->nameBuffer), ImVec2(0, 0), ImGuiTextFlags_None);
-	drawString->Text = std::string(drawString->nameBuffer);
+
+	ImGui::SameLine();
+
+	ImGui::Checkbox("Load a cvar", &drawString->loadCvar);
 
 	ImGui::NewLine();
 
@@ -716,12 +724,20 @@ void CanvasTool::Copy(int canvasItemindex)
 	if (copyStringPtr)
 	{
 		std::shared_ptr<CanvasDrawString> selectedItemPtr = std::dynamic_pointer_cast<CanvasDrawString>(selectedItem);
-		copyStringPtr->Text = selectedItemPtr->Text;
+
+		//http://www.cplusplus.com/forum/beginner/111242/
+		//makes copyStringPtr->nameBuffer = selectedItemPtr->nameBuffer
+		int stringLength = strlen(selectedItemPtr->nameBuffer);
+		for (int i = 0; i < stringLength; i++) {
+			copyStringPtr->nameBuffer[i] = selectedItemPtr->nameBuffer[i];
+		}
+
 		copyStringPtr->pos = selectedItemPtr->pos;
 		copyStringPtr->xScale = selectedItemPtr->xScale;
 		copyStringPtr->yScale = selectedItemPtr->yScale;
 		copyStringPtr->dropShadow = selectedItemPtr->dropShadow;
 		copyStringPtr->wrapText = selectedItemPtr->wrapText;
+		copyStringPtr->loadCvar = selectedItemPtr->loadCvar;
 		copyStringPtr->Color[0] = selectedItemPtr->Color[0];
 		copyStringPtr->Color[1] = selectedItemPtr->Color[1];
 		copyStringPtr->Color[2] = selectedItemPtr->Color[2];

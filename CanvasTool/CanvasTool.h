@@ -41,7 +41,7 @@ class CanvasTool : public BakkesMod::Plugin::BakkesModPlugin, public BakkesMod::
 	// Inherited via PluginWindow
 	bool isWindowOpen_ = false;
 	bool isMinimized_ = false;
-	std::string menuTitle_ = "CanvasTool v1.0";
+	std::string menuTitle_ = "CanvasTool v1.0.1";
 
 
 	virtual void Render() override;

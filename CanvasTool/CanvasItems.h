@@ -20,10 +20,10 @@ public:
 	float yScale;
 	bool dropShadow;
 	bool wrapText;
+	bool loadCvar;
 	float Color[3];
 	int Opacity;
 	std::string Text;
-
 
 	char nameBuffer[100] = "String";
 
