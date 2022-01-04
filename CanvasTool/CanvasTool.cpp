@@ -128,6 +128,33 @@ void CanvasTool::addItem(std::string itemName)
 
 void CanvasTool::RenderCanvas(CanvasWrapper canvas)
 {
+	static bool RButtonPressed = false;
+	static bool LButtonPressed = false;
+
+	//Check the mouse left button is pressed or not
+	if ((GetKeyState(VK_LBUTTON) & 0x80) != 0)
+	{
+		cvarManager->log("LButton pressed");
+		LButtonPressed = true;
+	}
+	else if ((GetKeyState(VK_LBUTTON) & 0x80) == 0 && LButtonPressed)
+	{
+
+		cvarManager->log("LButton realeased");
+		LButtonPressed = false;
+	}
+
+	//Check the mouse right button is pressed or not
+	if ((GetKeyState(VK_RBUTTON) & 0x80) != 0)
+	{
+		cvarManager->log("RButton pressed");
+	}
+
+	POINT point;
+	GetCursorPos(&point);
+	//cvarManager->log("x : " + std::to_string(point.x));
+	//cvarManager->log("y : " + std::to_string(point.y));
+
 	for (int i = 0; i < CanvasItems.size(); i++)
 	{
 		//cvarManager->log(std::to_string(i));
@@ -158,7 +185,53 @@ void CanvasTool::RenderCanvas(CanvasWrapper canvas)
 			}
 			canvas.DrawString(StringPtr->Text, StringPtr->xScale, StringPtr->yScale, StringPtr->dropShadow, StringPtr->wrapText);
 			//cvarManager->log(StringPtr->Text + " rendered at layer : " + std::to_string(StringPtr->ItemLayer));
+
+			Vector2F itemRectMax = canvas.GetStringSize(StringPtr->Text, StringPtr->xScale, StringPtr->yScale);
+			if (point.x >= StringPtr->pos.X && point.x <= StringPtr->pos.X + itemRectMax.X && point.y >= StringPtr->pos.Y && point.y <= StringPtr->pos.Y + itemRectMax.Y)
+			{
+				//cvarManager->log("wooooooo");
+
+
+				canvas.SetColor(255, 255, 255, 255);
+				canvas.SetPosition(StringPtr->pos);
+				canvas.DrawBox(Vector2{ int(itemRectMax.X), int(itemRectMax.Y) });
+
+				static bool wasPressingL = false;
+				if (LButtonPressed)
+				{
+					static int oldPosX = point.x;
+					static int oldPosY = point.y;
+
+
+					if (!wasPressingL)
+					{
+						oldPosX = point.x;
+						oldPosY = point.y;
+						wasPressingL = true;
+					}
+
+					StringPtr->pos.X += point.x - oldPosX;
+					StringPtr->pos.Y += point.y - oldPosY;
+
+
+					oldPosX = point.x;
+					oldPosY = point.y;
+				}
+				else
+				{
+					wasPressingL = false;
+				}
+			}
+			else
+			{
+				//cvarManager->log("AAAAAAAAAAAAAAAAAAAAAAA");
+			}
+
+
 		}
+
+
+
 
 		std::shared_ptr<CanvasDrawBox> BoxPtr = std::dynamic_pointer_cast<CanvasDrawBox>(CanvasItems.at(i));											//Render Box
 		if (BoxPtr && BoxPtr->ItemLayer == i)
