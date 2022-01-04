@@ -25,6 +25,9 @@ public:
 	int Opacity;
 	std::string Text;
 
+	Vector2F itemRectMax;
+	bool isHovered();
+
 	char nameBuffer[100] = "String";
 
 	CanvasDrawString();
@@ -40,6 +43,9 @@ public:
 	float Color[3];
 	int Opacity;
 
+
+	bool isHovered();
+
 	char nameBuffer[100] = "Box";
 
 	CanvasDrawBox();
@@ -54,6 +60,8 @@ public:
 	Vector2 size;
 	float Color[3];
 	int Opacity;
+
+	bool isHovered();
 
 	char nameBuffer[100] = "FillBox";
 
@@ -86,6 +94,8 @@ public:
 	float Color[3];
 	int Opacity;
 
+	bool isHovered();
+
 	char nameBuffer[100] = "Rect";
 
 	CanvasDrawRect();
@@ -101,6 +111,8 @@ public:
 	Vector2 p3;
 	float Color[3];
 	int Opacity;
+
+	bool isHovered();
 
 	char nameBuffer[100] = "FillTriangle";
 
@@ -119,7 +131,7 @@ public:
 	int Opacity;
 	bool isTextureLoaded;
 
-	char texturePathBuff[100];
+	char texturePathBuff[128];
 	char nameBuffer[100] = "Texture";
 
 	CanvasDrawTexture();
@@ -142,7 +154,7 @@ public:
 	unsigned int ClipTile;
 	bool isTextureLoaded;
 
-	char texturePathBuff[100] = "";
+	char texturePathBuff[128] = "";
 	char nameBuffer[100] = "Tile";
 
 	CanvasDrawTile();
@@ -166,7 +178,7 @@ public:
 	float AnchorY;
 	bool isTextureLoaded;
 
-	char texturePathBuff[100] = "";
+	char texturePathBuff[128] = "";
 	char nameBuffer[100] = "RotatedTile";
 
 	//Mark variables

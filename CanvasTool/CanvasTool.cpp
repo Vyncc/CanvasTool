@@ -186,40 +186,44 @@ void CanvasTool::RenderCanvas(CanvasWrapper canvas)
 			canvas.DrawString(StringPtr->Text, StringPtr->xScale, StringPtr->yScale, StringPtr->dropShadow, StringPtr->wrapText);
 			//cvarManager->log(StringPtr->Text + " rendered at layer : " + std::to_string(StringPtr->ItemLayer));
 
-			Vector2F itemRectMax = canvas.GetStringSize(StringPtr->Text, StringPtr->xScale, StringPtr->yScale);
-			if (point.x >= StringPtr->pos.X && point.x <= StringPtr->pos.X + itemRectMax.X && point.y >= StringPtr->pos.Y && point.y <= StringPtr->pos.Y + itemRectMax.Y)
+
+
+			StringPtr->itemRectMax = canvas.GetStringSize(StringPtr->Text, StringPtr->xScale, StringPtr->yScale);
+			if (SelectedIndex == StringPtr->ItemLayer)
 			{
-				//cvarManager->log("wooooooo");
+				if (!CanEditWhileWindowClosed && !isWindowOpen_) { break; }
 
+				canvas.SetColor(0, 255, 0, 255);
+				canvas.SetPosition(Vector2{ StringPtr->pos.X - 1, StringPtr->pos.Y - 1 });
+				canvas.DrawBox(Vector2{ int(StringPtr->itemRectMax.X + 1), int(StringPtr->itemRectMax.Y + 1) });
 
-				canvas.SetColor(255, 255, 255, 255);
-				canvas.SetPosition(StringPtr->pos);
-				canvas.DrawBox(Vector2{ int(itemRectMax.X), int(itemRectMax.Y) });
-
-				static bool wasPressingL = false;
-				if (LButtonPressed)
+				if (StringPtr->isHovered())
 				{
-					static int oldPosX = point.x;
-					static int oldPosY = point.y;
-
-
-					if (!wasPressingL)
+					static bool wasPressingL = false;
+					if (LButtonPressed)
 					{
+						static int oldPosX = point.x;
+						static int oldPosY = point.y;
+
+
+						if (!wasPressingL)
+						{
+							oldPosX = point.x;
+							oldPosY = point.y;
+							wasPressingL = true;
+						}
+
+						StringPtr->pos.X += point.x - oldPosX;
+						StringPtr->pos.Y += point.y - oldPosY;
+
+
 						oldPosX = point.x;
 						oldPosY = point.y;
-						wasPressingL = true;
 					}
-
-					StringPtr->pos.X += point.x - oldPosX;
-					StringPtr->pos.Y += point.y - oldPosY;
-
-
-					oldPosX = point.x;
-					oldPosY = point.y;
-				}
-				else
-				{
-					wasPressingL = false;
+					else
+					{
+						wasPressingL = false;
+					}
 				}
 			}
 			else
@@ -239,6 +243,45 @@ void CanvasTool::RenderCanvas(CanvasWrapper canvas)
 			canvas.SetColor((int)(BoxPtr->Color[0] * 255), (int)(BoxPtr->Color[1] * 255), (int)(BoxPtr->Color[2] * 255), BoxPtr->Opacity);
 			canvas.SetPosition(Vector2{ BoxPtr->pos.X, BoxPtr->pos.Y });
 			canvas.DrawBox(BoxPtr->size);
+
+
+			if (SelectedIndex == BoxPtr->ItemLayer)
+			{
+				if (!CanEditWhileWindowClosed && !isWindowOpen_) { break; }
+
+				canvas.SetColor(0, 255, 0, 255);
+				canvas.SetPosition(Vector2{ BoxPtr->pos.X - 2, BoxPtr->pos.Y - 2 });
+				canvas.DrawBox(Vector2{ int(BoxPtr->size.X + 4), int(BoxPtr->size.Y + 4) });
+
+				if (BoxPtr->isHovered())
+				{
+					static bool wasPressingL = false;
+					if (LButtonPressed)
+					{
+						static int oldPosX = point.x;
+						static int oldPosY = point.y;
+
+
+						if (!wasPressingL)
+						{
+							oldPosX = point.x;
+							oldPosY = point.y;
+							wasPressingL = true;
+						}
+
+						BoxPtr->pos.X += point.x - oldPosX;
+						BoxPtr->pos.Y += point.y - oldPosY;
+
+
+						oldPosX = point.x;
+						oldPosY = point.y;
+					}
+					else
+					{
+						wasPressingL = false;
+					}
+				}
+			}
 		}
 
 		std::shared_ptr<CanvasDrawFillBox> FillBoxPtr = std::dynamic_pointer_cast<CanvasDrawFillBox>(CanvasItems.at(i));								//Render FillBox
@@ -247,6 +290,46 @@ void CanvasTool::RenderCanvas(CanvasWrapper canvas)
 			canvas.SetColor((int)(FillBoxPtr->Color[0] * 255), (int)(FillBoxPtr->Color[1] * 255), (int)(FillBoxPtr->Color[2] * 255), FillBoxPtr->Opacity);
 			canvas.SetPosition(Vector2{ FillBoxPtr->pos.X, FillBoxPtr->pos.Y });
 			canvas.FillBox(FillBoxPtr->size);
+
+
+
+			if (SelectedIndex == FillBoxPtr->ItemLayer)
+			{
+				if (!CanEditWhileWindowClosed && !isWindowOpen_) { break; }
+
+				canvas.SetColor(0, 255, 0, 255);
+				canvas.SetPosition(Vector2{ FillBoxPtr->pos.X - 2, FillBoxPtr->pos.Y - 2 });
+				canvas.DrawBox(Vector2{ int(FillBoxPtr->size.X + 4), int(FillBoxPtr->size.Y + 4) });
+
+				if (FillBoxPtr->isHovered())
+				{
+					static bool wasPressingL = false;
+					if (LButtonPressed)
+					{
+						static int oldPosX = point.x;
+						static int oldPosY = point.y;
+
+
+						if (!wasPressingL)
+						{
+							oldPosX = point.x;
+							oldPosY = point.y;
+							wasPressingL = true;
+						}
+
+						FillBoxPtr->pos.X += point.x - oldPosX;
+						FillBoxPtr->pos.Y += point.y - oldPosY;
+
+
+						oldPosX = point.x;
+						oldPosY = point.y;
+					}
+					else
+					{
+						wasPressingL = false;
+					}
+				}
+			}
 		}
 
 		std::shared_ptr<CanvasDrawLine> LinePtr = std::dynamic_pointer_cast<CanvasDrawLine>(CanvasItems.at(i));											//Render Line
@@ -261,6 +344,48 @@ void CanvasTool::RenderCanvas(CanvasWrapper canvas)
 		{
 			canvas.SetColor((int)(RectPtr->Color[0] * 255), (int)(RectPtr->Color[1] * 255), (int)(RectPtr->Color[2] * 255), RectPtr->Opacity);
 			canvas.DrawRect(RectPtr->startPos, RectPtr->endPos);
+
+
+
+			if (SelectedIndex == RectPtr->ItemLayer)
+			{
+				if (!CanEditWhileWindowClosed && !isWindowOpen_) { break; }
+
+				canvas.SetColor(0, 255, 0, 255);
+				canvas.SetPosition(Vector2{ RectPtr->startPos.X - 2, RectPtr->startPos.Y - 2 });
+				canvas.DrawBox(Vector2{ int((RectPtr->endPos.X - RectPtr->startPos.X) + 4), int((RectPtr->endPos.Y - RectPtr->startPos.Y) + 4) });
+
+				if (RectPtr->isHovered())
+				{
+					static bool wasPressingL = false;
+					if (LButtonPressed)
+					{
+						static int oldPosX = point.x;
+						static int oldPosY = point.y;
+
+
+						if (!wasPressingL)
+						{
+							oldPosX = point.x;
+							oldPosY = point.y;
+							wasPressingL = true;
+						}
+
+						RectPtr->startPos.X += point.x - oldPosX;
+						RectPtr->endPos.X += point.x - oldPosX;
+						RectPtr->startPos.Y += point.y - oldPosY;
+						RectPtr->endPos.Y += point.y - oldPosY;
+
+
+						oldPosX = point.x;
+						oldPosY = point.y;
+					}
+					else
+					{
+						wasPressingL = false;
+					}
+				}
+			}
 		}
 
 		std::shared_ptr<CanvasDrawFillTriangle> FillTrianglePtr = std::dynamic_pointer_cast<CanvasDrawFillTriangle>(CanvasItems.at(i));					//Render Fill Triangle
@@ -268,6 +393,49 @@ void CanvasTool::RenderCanvas(CanvasWrapper canvas)
 		{
 			canvas.SetColor((int)(FillTrianglePtr->Color[0] * 255), (int)(FillTrianglePtr->Color[1] * 255), (int)(FillTrianglePtr->Color[2] * 255), FillTrianglePtr->Opacity);
 			canvas.FillTriangle(FillTrianglePtr->p1, FillTrianglePtr->p2, FillTrianglePtr->p3);
+
+			if (SelectedIndex == FillTrianglePtr->ItemLayer)
+			{
+				if (!CanEditWhileWindowClosed && !isWindowOpen_) { break; }
+
+				canvas.SetColor(0, 255, 0, 255);
+				std::vector<Vector2> aaa = GetNumber(FillTrianglePtr->p1, FillTrianglePtr->p2, FillTrianglePtr->p3);
+				canvas.SetPosition(aaa.at(0));
+				canvas.DrawBox(Vector2{ aaa.at(1).X - aaa.at(0).X, aaa.at(1).Y - aaa.at(0).Y });
+
+				if (FillTrianglePtr->isHovered())
+				{
+					static bool wasPressingL = false;
+					if (LButtonPressed)
+					{
+						static int oldPosX = point.x;
+						static int oldPosY = point.y;
+
+
+						if (!wasPressingL)
+						{
+							oldPosX = point.x;
+							oldPosY = point.y;
+							wasPressingL = true;
+						}
+
+						FillTrianglePtr->p1.X += point.x - oldPosX;
+						FillTrianglePtr->p2.X += point.x - oldPosX;
+						FillTrianglePtr->p3.X += point.x - oldPosX;
+						FillTrianglePtr->p1.Y += point.y - oldPosY;
+						FillTrianglePtr->p2.Y += point.y - oldPosY;
+						FillTrianglePtr->p3.Y += point.y - oldPosY;
+
+
+						oldPosX = point.x;
+						oldPosY = point.y;
+					}
+					else
+					{
+						wasPressingL = false;
+					}
+				}
+			}
 		}
 
 		std::shared_ptr<CanvasDrawTexture> TexturePtr = std::dynamic_pointer_cast<CanvasDrawTexture>(CanvasItems.at(i));								//Render Texture
@@ -278,6 +446,7 @@ void CanvasTool::RenderCanvas(CanvasWrapper canvas)
 				canvas.SetColor((int)(TexturePtr->Color[0] * 255), (int)(TexturePtr->Color[1] * 255), (int)(TexturePtr->Color[2] * 255), TexturePtr->Opacity);
 				canvas.SetPosition(Vector2{ TexturePtr->pos.X, TexturePtr->pos.Y });
 				canvas.DrawTexture(TexturePtr->Texture.get(), TexturePtr->scale);
+				cvarManager->log("x : " + std::to_string(canvas.GetSize().X) + "y : " + std::to_string(canvas.GetSize().Y));
 			}
 		}
 
@@ -314,6 +483,35 @@ void CanvasTool::RenderCanvas(CanvasWrapper canvas)
 		}
 
 	}
+}
+
+std::vector<Vector2> CanvasTool::GetNumber(Vector2 a, Vector2 b, Vector2 c)
+{
+	int mostSignificantX = 0;
+	int mostSignificantY = 0;
+	int lowestX = 1920;
+	int lowestY = 1080;
+	std::vector<int> Xposes = { a.X, b.X, c.X };
+	std::vector<int> Yposes = { a.Y, b.Y, c.Y };
+
+	for (int i = 0; i < Xposes.size(); i++)
+	{
+		if (Xposes.at(i) > mostSignificantX)
+			mostSignificantX = Xposes.at(i);
+		if (Xposes.at(i) < lowestX)
+			lowestX = Xposes.at(i);
+	}
+
+	for (int i = 0; i < Yposes.size(); i++)
+	{
+		if (Yposes.at(i) > mostSignificantY)
+			mostSignificantY = Yposes.at(i);
+		if (Yposes.at(i) < lowestY)
+			lowestY = Yposes.at(i);
+	}
+	Vector2 pos = { lowestX, lowestY };
+	Vector2 rectMax = { mostSignificantX, mostSignificantY };
+	return std::vector<Vector2> {pos, rectMax};
 }
 
 bool CanvasTool::FileExists(char pathBuff[100])

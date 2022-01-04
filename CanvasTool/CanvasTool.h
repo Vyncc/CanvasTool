@@ -19,11 +19,13 @@ class CanvasTool : public BakkesMod::Plugin::BakkesModPlugin, public BakkesMod::
 	virtual void onUnload();
 
 	int SelectedIndex = 0;
+	bool CanEditWhileWindowClosed = false;
+
+	std::vector<Vector2> GetNumber(Vector2 a, Vector2 b, Vector2 c);
 
 	//Canvas
 	std::vector<std::shared_ptr<CanvasItem>> CanvasItems;
 	virtual void RenderCanvas(CanvasWrapper canvas);
-
 
 	void addItem(std::string itemName);
 	void updateTexture(std::shared_ptr<CanvasDrawTexture> drawTexture);

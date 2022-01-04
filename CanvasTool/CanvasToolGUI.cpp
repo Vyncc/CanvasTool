@@ -23,12 +23,26 @@ void HelpMarker(const char* desc)
 void CanvasTool::Render()
 {
 	ImGui::SetNextWindowSizeConstraints(ImVec2(820, 607), ImVec2(FLT_MAX, FLT_MAX));
-	if (!ImGui::Begin(menuTitle_.c_str(), &isWindowOpen_, ImGuiWindowFlags_None))
+	if (!ImGui::Begin(menuTitle_.c_str(), &isWindowOpen_, ImGuiWindowFlags_MenuBar))
 	{
 		// Early out if the window is collapsed, as an optimization.
 		ImGui::End();
 		return;
 	}
+
+
+	if (ImGui::BeginMenuBar())
+	{
+		if (ImGui::BeginMenu("Settings"))
+		{
+			ImGui::Checkbox("Edit While Window Is Closed", &CanEditWhileWindowClosed);
+
+			ImGui::EndMenu();
+		}
+
+		ImGui::EndMenuBar();
+	}
+
 
 
 	if (ImGui::BeginChild("##ItemsList", ImVec2(250, 0), true)) {

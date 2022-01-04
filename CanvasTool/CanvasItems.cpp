@@ -17,6 +17,20 @@ CanvasDrawString::CanvasDrawString()
 	Text = "String";
 
 }
+bool CanvasDrawString::isHovered()
+{
+	POINT point;
+	GetCursorPos(&point);
+
+	if (point.x >= pos.X && point.x <= pos.X + itemRectMax.X && point.y >= pos.Y && point.y <= pos.Y + itemRectMax.Y)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
 
 CanvasDrawBox::CanvasDrawBox()
 {
@@ -27,6 +41,20 @@ CanvasDrawBox::CanvasDrawBox()
 	Color[2] = 1;
 	Opacity = 255;
 }
+bool CanvasDrawBox::isHovered()
+{
+	POINT point;
+	GetCursorPos(&point);
+
+	if (point.x >= pos.X && point.x <= pos.X + size.X && point.y >= pos.Y && point.y <= pos.Y + size.Y)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
 
 CanvasDrawFillBox::CanvasDrawFillBox()
 {
@@ -36,6 +64,20 @@ CanvasDrawFillBox::CanvasDrawFillBox()
 	Color[1] = 1;
 	Color[2] = 1;
 	Opacity = 255;
+}
+bool CanvasDrawFillBox::isHovered()
+{
+	POINT point;
+	GetCursorPos(&point);
+
+	if (point.x >= pos.X && point.x <= pos.X + size.X && point.y >= pos.Y && point.y <= pos.Y + size.Y)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 CanvasDrawLine::CanvasDrawLine()
@@ -58,6 +100,20 @@ CanvasDrawRect::CanvasDrawRect()
 	Color[2] = 1;
 	Opacity = 255;
 }
+bool CanvasDrawRect::isHovered()
+{
+	POINT point;
+	GetCursorPos(&point);
+
+	if (point.x >= startPos.X && point.x <= endPos.X && point.y >= startPos.Y && point.y <= endPos.Y)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
 
 CanvasDrawFillTriangle::CanvasDrawFillTriangle()
 {
@@ -68,6 +124,28 @@ CanvasDrawFillTriangle::CanvasDrawFillTriangle()
 	Color[1] = 1;
 	Color[2] = 1;
 	Opacity = 255;
+}
+//https://webdevdesigner.com/q/how-to-determine-if-a-point-is-in-a-2d-triangle-36120/
+bool CanvasDrawFillTriangle::isHovered()
+{
+	POINT point;
+	GetCursorPos(&point);
+
+	Vector2 s = { point.x, point.y };
+	Vector2 a = p1;
+	Vector2 b = p2;
+	Vector2 c = p3;
+
+	int as_x = s.X - a.X;
+	int as_y = s.Y - a.Y;
+
+	bool s_ab = (b.X - a.X) * as_y - (b.Y - a.Y) * as_x > 0;
+
+	if ((c.X - a.X) * as_y - (c.Y - a.Y) * as_x > 0 == s_ab) return false;
+
+	if ((c.X - b.X) * (s.Y - b.Y) - (c.Y - b.Y) * (s.X - b.X) > 0 != s_ab) return false;
+
+	return true;
 }
 
 CanvasDrawTexture::CanvasDrawTexture()
