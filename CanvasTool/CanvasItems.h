@@ -93,6 +93,7 @@ public:
 	Vector2 endPos;
 	float Color[3];
 	int Opacity;
+	std::vector<Vector2> GetRectSelectedBoxPos(Vector2 rectpos, Vector2 rectmax);
 
 	bool isHovered();
 
@@ -130,6 +131,10 @@ public:
 	float Color[3];
 	int Opacity;
 	bool isTextureLoaded;
+	bool SetImageSize;
+
+	ImVec2 ImageSize = {10, 10};
+	bool isHovered();
 
 	char texturePathBuff[128];
 	char nameBuffer[100] = "Texture";
@@ -154,6 +159,8 @@ public:
 	unsigned int ClipTile;
 	bool isTextureLoaded;
 
+	bool isHovered();
+
 	char texturePathBuff[128] = "";
 	char nameBuffer[100] = "Tile";
 
@@ -177,6 +184,8 @@ public:
 	float AnchorX;
 	float AnchorY;
 	bool isTextureLoaded;
+
+	bool isHovered();
 
 	char texturePathBuff[128] = "";
 	char nameBuffer[100] = "RotatedTile";

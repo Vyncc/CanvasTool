@@ -100,12 +100,43 @@ CanvasDrawRect::CanvasDrawRect()
 	Color[2] = 1;
 	Opacity = 255;
 }
+std::vector<Vector2> CanvasDrawRect::GetRectSelectedBoxPos(Vector2 rectpos, Vector2 rectmax)
+{
+	int mostSignificantX = 0;
+	int mostSignificantY = 0;
+	int lowestX = 1920;
+	int lowestY = 1080;
+	std::vector<int> Xposes = { rectpos.X, rectmax.X };
+	std::vector<int> Yposes = { rectpos.Y, rectmax.Y };
+
+	for (int i = 0; i < Xposes.size(); i++)
+	{
+		if (Xposes.at(i) > mostSignificantX)
+			mostSignificantX = Xposes.at(i);
+		if (Xposes.at(i) < lowestX)
+			lowestX = Xposes.at(i);
+	}
+
+	for (int i = 0; i < Yposes.size(); i++)
+	{
+		if (Yposes.at(i) > mostSignificantY)
+			mostSignificantY = Yposes.at(i);
+		if (Yposes.at(i) < lowestY)
+			lowestY = Yposes.at(i);
+	}
+	Vector2 pos = { lowestX, lowestY };
+	Vector2 rectMax = { mostSignificantX, mostSignificantY };
+	return std::vector<Vector2> {pos, rectMax};
+}
 bool CanvasDrawRect::isHovered()
 {
 	POINT point;
 	GetCursorPos(&point);
 
-	if (point.x >= startPos.X && point.x <= endPos.X && point.y >= startPos.Y && point.y <= endPos.Y)
+
+	std::vector<Vector2> RectPos = GetRectSelectedBoxPos(Vector2{ startPos.X , startPos.Y }, Vector2{ endPos.X , endPos.Y });
+
+	if (point.x >= RectPos.at(0).X && point.x <= RectPos.at(1).X && point.y >= RectPos.at(0).Y && point.y <= RectPos.at(1).Y)
 	{
 		return true;
 	}
@@ -157,6 +188,21 @@ CanvasDrawTexture::CanvasDrawTexture()
 	Color[2] = 1;
 	Opacity = 255;
 	isTextureLoaded = false;
+	SetImageSize = false;
+}
+bool CanvasDrawTexture::isHovered()
+{
+	POINT point;
+	GetCursorPos(&point);
+
+	if (point.x >= pos.X && point.x <= pos.X + (ImageSize.x * scale) && point.y >= pos.Y && point.y <= pos.Y + (ImageSize.y * scale))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 CanvasDrawTile::CanvasDrawTile()
@@ -173,6 +219,20 @@ CanvasDrawTile::CanvasDrawTile()
 	Color[2] = 0.0039;
 	ClipTile = 1;
 	isTextureLoaded = false;
+}
+bool CanvasDrawTile::isHovered()
+{
+	POINT point;
+	GetCursorPos(&point);
+
+	if (point.x >= pos.X && point.x <= pos.X + XL && point.y >= pos.Y && point.y <= pos.Y + YL)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 CanvasDrawRotatedTile::CanvasDrawRotatedTile()
@@ -196,4 +256,18 @@ CanvasDrawRotatedTile::CanvasDrawRotatedTile()
 	MarkerColor[2] = 1;
 	MarkerOpacity = 255;
 	DrawMarker = true;
+}
+bool CanvasDrawRotatedTile::isHovered()
+{
+	POINT point;
+	GetCursorPos(&point);
+
+	if (point.x >= pos.X && point.x <= pos.X + XL && point.y >= pos.Y && point.y <= pos.Y + YL)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }

@@ -412,7 +412,7 @@ void CanvasTool::RenderFillTriangleDetails(std::shared_ptr<CanvasDrawFillTriangl
 	ImGui::SliderInt("p2 X", &drawFilTriangle->p2.X, 0.0, 1920);
 	ImGui::SliderInt("p2 Y", &drawFilTriangle->p2.Y, 0.0, 1080);
 	ImGui::SliderInt("p3 X", &drawFilTriangle->p3.X, 0.0, 1920);
-	ImGui::SliderInt("p6 Y", &drawFilTriangle->p3.Y, 0.0, 1080);
+	ImGui::SliderInt("p3 Y", &drawFilTriangle->p3.Y, 0.0, 1080);
 	ImGui::NewLine();
 	ImGui::SliderInt("Opacity(doesn't work idk why)", &drawFilTriangle->Opacity, 0, 255);
 	ImGui::ColorEdit3("Color", drawFilTriangle->Color);
@@ -447,8 +447,28 @@ void CanvasTool::RenderTextureDetails(std::shared_ptr<CanvasDrawTexture> drawTex
 		ImGui::TextColored(ImVec4(0, 255, 0, 1), "You can apply ;)");
 	}
 
+	if (ImGui::Button("Open file explorer"))
+	{
+		ImGui::OpenPopup("Select an image");
+	}
+	renderFileExplorer(drawTexture);
+
+	ImGui::SameLine();
+
 	if (ImGui::Button("Apply Texture"))
 	{
+		const char* theFile = drawTexture->texturePathBuff;
+		int the_x = 0;
+		int the_y = 0;
+		bool didRun = false;
+		drawTexture->SetImageSize = false;
+
+		didRun = GetImageSize(theFile, &the_x, &the_y);
+		if (didRun)
+			drawTexture->ImageSize = { float(the_x) , float(the_y) };
+		else
+			drawTexture->SetImageSize = true;
+
 		updateTexture(drawTexture);
 	}
 
@@ -457,6 +477,13 @@ void CanvasTool::RenderTextureDetails(std::shared_ptr<CanvasDrawTexture> drawTex
 	ImGui::SliderInt("Position X", &drawTexture->pos.X, -1920, 1920);
 	ImGui::SliderInt("Position Y", &drawTexture->pos.Y, -1080, 1080);
 	ImGui::NewLine();
+	if (drawTexture->SetImageSize)
+	{
+		ImGui::Text("Set Dimensions");
+		ImGui::SliderFloat("X", &drawTexture->ImageSize.x, 0, 1920);
+		ImGui::SliderFloat("Y", &drawTexture->ImageSize.y, 0, 1080);
+		ImGui::NewLine();
+	}
 	ImGui::SliderFloat("Scale", &drawTexture->scale, 0.f, 10.f);
 	ImGui::NewLine();
 	ImGui::SliderInt("Opacity", &drawTexture->Opacity, 0, 255);
@@ -467,8 +494,6 @@ void CanvasTool::RenderTextureDetails(std::shared_ptr<CanvasDrawTexture> drawTex
 	ImGui::SameLine();
 	ImGui::Text("Blue : %f", drawTexture->Color[2]);
 	ImGui::NewLine();
-
-
 }
 
 void CanvasTool::RenderTileDetails(std::shared_ptr<CanvasDrawTile> drawTile)
@@ -493,6 +518,14 @@ void CanvasTool::RenderTileDetails(std::shared_ptr<CanvasDrawTile> drawTile)
 	{
 		ImGui::TextColored(ImVec4(0, 255, 0, 1), "You can apply ;)");
 	}
+
+	if (ImGui::Button("Open file explorer"))
+	{
+		ImGui::OpenPopup("Select an image");
+	}
+	renderFileExplorer(drawTile);
+
+	ImGui::SameLine();
 
 	if (ImGui::Button("Apply Texture"))
 	{
@@ -543,6 +576,14 @@ void CanvasTool::RenderRotatedTileDetails(std::shared_ptr<CanvasDrawRotatedTile>
 	{
 		ImGui::TextColored(ImVec4(0, 255, 0, 1), "You can apply ;)");
 	}
+
+	if (ImGui::Button("Open file explorer"))
+	{
+		ImGui::OpenPopup("Select an image");
+	}
+	renderFileExplorer(drawRotatedTile);
+
+	ImGui::SameLine();
 
 	if (ImGui::Button("Apply Texture"))
 	{
@@ -882,6 +923,438 @@ void CanvasTool::Copy(int canvasItemindex)
 	cvarManager->log("Copied : " + std::to_string(CanvasItems.at(canvasItemindex)->ItemLayer));
 }
 
+void CanvasTool::renderFileExplorer(std::shared_ptr<CanvasDrawTexture> drawTexture)
+{
+	ImGui::SetNextWindowSize(ImVec2(600.f, 429.f));
+	if (ImGui::BeginPopupModal("Select an image", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		static char newFolderName[128] = "";
+
+		static char fullPathBuff[256] = "C:/";
+		std::filesystem::path currentPath = fullPathBuff;
+
+		ImGui::BeginChild("##fullPath", ImVec2(ImGui::GetContentRegionAvailWidth(), 35.f), true);
+		{
+			ImGui::Columns(2, 0, true);
+			ImGui::SetColumnWidth(0, 40.f);
+
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
+			if (ImGui::Selectable("<--"))
+			{
+				strncpy(fullPathBuff, currentPath.parent_path().string().c_str(), IM_ARRAYSIZE(fullPathBuff));
+			}
+
+			ImGui::NextColumn();
+
+			std::vector<std::string> Drives = GetDrives();
+
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() - 108.f);
+			if (ImGui::BeginCombo("", fullPathBuff))
+			{
+				for (auto drive : Drives)
+				{
+					drive += ":/";
+					if (ImGui::Selectable(drive.c_str()))
+					{
+						strncpy(fullPathBuff, drive.c_str(), IM_ARRAYSIZE(fullPathBuff));
+						currentPath = fullPathBuff;
+					}
+				}
+				ImGui::EndCombo();
+			}
+
+			currentPath = fullPathBuff;
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("New Folder", ImVec2(100.f, 19.f)))
+			{
+				strncpy(newFolderName, "", IM_ARRAYSIZE(newFolderName));
+				ImGui::OpenPopup("Folder Name");
+			}
+			if (ImGui::BeginPopupModal("Folder Name", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+			{
+				ImGui::InputText("##newFloderNameInputText", newFolderName, IM_ARRAYSIZE(newFolderName));
+				if (ImGui::Button("Confirm", ImVec2(100.f, 25.f)))
+				{
+					try
+					{
+						std::filesystem::create_directory(currentPath.string() + "/" + newFolderName);
+					}
+					catch (const std::exception& ex) //manage errors when trying to create a folder in an administrator folder
+					{
+						cvarManager->log(ex.what());
+					}
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::SameLine();
+
+				if (ImGui::Button("Cancel", ImVec2(100.f, 25.f)))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::EndPopup();
+			}
+
+			ImGui::EndChild();
+		}
+
+		std::vector<std::filesystem::directory_entry> direcoriesList;
+		std::vector<std::filesystem::directory_entry> filesList;
+		static int selectedFile = -1;
+
+		ImGui::BeginChild("##directories", ImVec2(ImGui::GetContentRegionAvailWidth(), ImGui::GetWindowHeight() * 0.75f), true);
+		{
+			try
+			{
+				for (const auto& dir : std::filesystem::directory_iterator(currentPath))
+				{
+					if (dir.is_directory())
+					{
+						direcoriesList.push_back(dir);
+					}
+					else if(dir.path().extension() == ".png" || dir.path().extension() == ".jpg" || dir.path().extension() == ".jpeg")
+					{
+						filesList.push_back(dir);
+					}
+				}
+
+
+				for (auto directory : direcoriesList)
+				{
+					if (ImGui::Selectable(directory.path().filename().string().c_str()))
+					{
+						strncpy(fullPathBuff, directory.path().string().c_str(), IM_ARRAYSIZE(fullPathBuff));
+					}
+				}
+
+
+				for (int i = 0; i < filesList.size(); i++)
+				{
+					if (ImGui::Selectable(filesList[i].path().filename().string().c_str(), selectedFile == i))
+					{
+						selectedFile = i;
+					}
+				}
+			}
+			catch (const std::exception& ex)
+			{
+				cvarManager->log("error : " + std::string(ex.what()));
+				strncpy(fullPathBuff, currentPath.parent_path().string().c_str(), IM_ARRAYSIZE(fullPathBuff));
+			}
+
+			ImGui::EndChild();
+		}
+
+		if (ImGui::Button("Cancel", ImVec2(100.f, 30.f)))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::SameLine();
+
+		AlignRightNexIMGUItItem(100.f, 8.f);
+		if (ImGui::Button("Select", ImVec2(100.f, 30.f)))
+		{
+			strncpy(drawTexture->texturePathBuff, filesList[selectedFile].path().string().c_str(), IM_ARRAYSIZE(drawTexture->texturePathBuff));
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::EndPopup();
+	}
+}
+
+void CanvasTool::renderFileExplorer(std::shared_ptr<CanvasDrawTile> drawTile)
+{
+	ImGui::SetNextWindowSize(ImVec2(600.f, 429.f));
+	if (ImGui::BeginPopupModal("Select an image", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		static char newFolderName[128] = "";
+
+		static char fullPathBuff[256] = "C:/";
+		std::filesystem::path currentPath = fullPathBuff;
+
+		ImGui::BeginChild("##fullPath", ImVec2(ImGui::GetContentRegionAvailWidth(), 35.f), true);
+		{
+			ImGui::Columns(2, 0, true);
+			ImGui::SetColumnWidth(0, 40.f);
+
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
+			if (ImGui::Selectable("<--"))
+			{
+				strncpy(fullPathBuff, currentPath.parent_path().string().c_str(), IM_ARRAYSIZE(fullPathBuff));
+			}
+
+			ImGui::NextColumn();
+
+			std::vector<std::string> Drives = GetDrives();
+
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() - 108.f);
+			if (ImGui::BeginCombo("", fullPathBuff))
+			{
+				for (auto drive : Drives)
+				{
+					drive += ":/";
+					if (ImGui::Selectable(drive.c_str()))
+					{
+						strncpy(fullPathBuff, drive.c_str(), IM_ARRAYSIZE(fullPathBuff));
+						currentPath = fullPathBuff;
+					}
+				}
+				ImGui::EndCombo();
+			}
+
+			currentPath = fullPathBuff;
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("New Folder", ImVec2(100.f, 19.f)))
+			{
+				strncpy(newFolderName, "", IM_ARRAYSIZE(newFolderName));
+				ImGui::OpenPopup("Folder Name");
+			}
+			if (ImGui::BeginPopupModal("Folder Name", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+			{
+				ImGui::InputText("##newFloderNameInputText", newFolderName, IM_ARRAYSIZE(newFolderName));
+				if (ImGui::Button("Confirm", ImVec2(100.f, 25.f)))
+				{
+					try
+					{
+						std::filesystem::create_directory(currentPath.string() + "/" + newFolderName);
+					}
+					catch (const std::exception& ex) //manage errors when trying to create a folder in an administrator folder
+					{
+						cvarManager->log(ex.what());
+					}
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::SameLine();
+
+				if (ImGui::Button("Cancel", ImVec2(100.f, 25.f)))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::EndPopup();
+			}
+
+			ImGui::EndChild();
+		}
+
+		std::vector<std::filesystem::directory_entry> direcoriesList;
+		std::vector<std::filesystem::directory_entry> filesList;
+		static int selectedFile = -1;
+
+		ImGui::BeginChild("##directories", ImVec2(ImGui::GetContentRegionAvailWidth(), ImGui::GetWindowHeight() * 0.75f), true);
+		{
+			try
+			{
+				for (const auto& dir : std::filesystem::directory_iterator(currentPath))
+				{
+					if (dir.is_directory())
+					{
+						direcoriesList.push_back(dir);
+					}
+					else if (dir.path().extension() == ".png" || dir.path().extension() == ".jpg" || dir.path().extension() == ".jpeg")
+					{
+						filesList.push_back(dir);
+					}
+				}
+
+
+				for (auto directory : direcoriesList)
+				{
+					if (ImGui::Selectable(directory.path().filename().string().c_str()))
+					{
+						strncpy(fullPathBuff, directory.path().string().c_str(), IM_ARRAYSIZE(fullPathBuff));
+					}
+				}
+
+
+				for (int i = 0; i < filesList.size(); i++)
+				{
+					if (ImGui::Selectable(filesList[i].path().filename().string().c_str(), selectedFile == i))
+					{
+						selectedFile = i;
+					}
+				}
+			}
+			catch (const std::exception& ex)
+			{
+				cvarManager->log("error : " + std::string(ex.what()));
+				strncpy(fullPathBuff, currentPath.parent_path().string().c_str(), IM_ARRAYSIZE(fullPathBuff));
+			}
+
+			ImGui::EndChild();
+		}
+
+		if (ImGui::Button("Cancel", ImVec2(100.f, 30.f)))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::SameLine();
+
+		AlignRightNexIMGUItItem(100.f, 8.f);
+		if (ImGui::Button("Select", ImVec2(100.f, 30.f)))
+		{
+			strncpy(drawTile->texturePathBuff, filesList[selectedFile].path().string().c_str(), IM_ARRAYSIZE(drawTile->texturePathBuff));
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::EndPopup();
+	}
+}
+
+void CanvasTool::renderFileExplorer(std::shared_ptr<CanvasDrawRotatedTile> drawRotatedTile)
+{
+	ImGui::SetNextWindowSize(ImVec2(600.f, 429.f));
+	if (ImGui::BeginPopupModal("Select an image", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		static char newFolderName[128] = "";
+
+		static char fullPathBuff[256] = "C:/";
+		std::filesystem::path currentPath = fullPathBuff;
+
+		ImGui::BeginChild("##fullPath", ImVec2(ImGui::GetContentRegionAvailWidth(), 35.f), true);
+		{
+			ImGui::Columns(2, 0, true);
+			ImGui::SetColumnWidth(0, 40.f);
+
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
+			if (ImGui::Selectable("<--"))
+			{
+				strncpy(fullPathBuff, currentPath.parent_path().string().c_str(), IM_ARRAYSIZE(fullPathBuff));
+			}
+
+			ImGui::NextColumn();
+
+			std::vector<std::string> Drives = GetDrives();
+
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() - 108.f);
+			if (ImGui::BeginCombo("", fullPathBuff))
+			{
+				for (auto drive : Drives)
+				{
+					drive += ":/";
+					if (ImGui::Selectable(drive.c_str()))
+					{
+						strncpy(fullPathBuff, drive.c_str(), IM_ARRAYSIZE(fullPathBuff));
+						currentPath = fullPathBuff;
+					}
+				}
+				ImGui::EndCombo();
+			}
+
+			currentPath = fullPathBuff;
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("New Folder", ImVec2(100.f, 19.f)))
+			{
+				strncpy(newFolderName, "", IM_ARRAYSIZE(newFolderName));
+				ImGui::OpenPopup("Folder Name");
+			}
+			if (ImGui::BeginPopupModal("Folder Name", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+			{
+				ImGui::InputText("##newFloderNameInputText", newFolderName, IM_ARRAYSIZE(newFolderName));
+				if (ImGui::Button("Confirm", ImVec2(100.f, 25.f)))
+				{
+					try
+					{
+						std::filesystem::create_directory(currentPath.string() + "/" + newFolderName);
+					}
+					catch (const std::exception& ex) //manage errors when trying to create a folder in an administrator folder
+					{
+						cvarManager->log(ex.what());
+					}
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::SameLine();
+
+				if (ImGui::Button("Cancel", ImVec2(100.f, 25.f)))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::EndPopup();
+			}
+
+			ImGui::EndChild();
+		}
+
+		std::vector<std::filesystem::directory_entry> direcoriesList;
+		std::vector<std::filesystem::directory_entry> filesList;
+		static int selectedFile = -1;
+
+		ImGui::BeginChild("##directories", ImVec2(ImGui::GetContentRegionAvailWidth(), ImGui::GetWindowHeight() * 0.75f), true);
+		{
+			try
+			{
+				for (const auto& dir : std::filesystem::directory_iterator(currentPath))
+				{
+					if (dir.is_directory())
+					{
+						direcoriesList.push_back(dir);
+					}
+					else if (dir.path().extension() == ".png" || dir.path().extension() == ".jpg" || dir.path().extension() == ".jpeg")
+					{
+						filesList.push_back(dir);
+					}
+				}
+
+
+				for (auto directory : direcoriesList)
+				{
+					if (ImGui::Selectable(directory.path().filename().string().c_str()))
+					{
+						strncpy(fullPathBuff, directory.path().string().c_str(), IM_ARRAYSIZE(fullPathBuff));
+					}
+				}
+
+
+				for (int i = 0; i < filesList.size(); i++)
+				{
+					if (ImGui::Selectable(filesList[i].path().filename().string().c_str(), selectedFile == i))
+					{
+						selectedFile = i;
+					}
+				}
+			}
+			catch (const std::exception& ex)
+			{
+				cvarManager->log("error : " + std::string(ex.what()));
+				strncpy(fullPathBuff, currentPath.parent_path().string().c_str(), IM_ARRAYSIZE(fullPathBuff));
+			}
+
+			ImGui::EndChild();
+		}
+
+		if (ImGui::Button("Cancel", ImVec2(100.f, 30.f)))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::SameLine();
+
+		AlignRightNexIMGUItItem(100.f, 8.f);
+		if (ImGui::Button("Select", ImVec2(100.f, 30.f)))
+		{
+			strncpy(drawRotatedTile->texturePathBuff, filesList[selectedFile].path().string().c_str(), IM_ARRAYSIZE(drawRotatedTile->texturePathBuff));
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::EndPopup();
+	}
+}
+
+void CanvasTool::AlignRightNexIMGUItItem(float itemWidth, float borderGap)
+{
+	auto windowWidth = ImGui::GetWindowSize().x;
+	float totalWidth = itemWidth + borderGap;
+	ImGui::SetCursorPosX(windowWidth - totalWidth);
+}
 
 // Name of the menu that is used to toggle the window.
 std::string CanvasTool::GetMenuName()

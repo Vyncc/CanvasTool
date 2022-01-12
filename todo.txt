@@ -1,1 +1,5 @@
 je voudrais pouvoir modifier la position/scale des canvas directement avec la souris
+
+puvoir custom la box de selection
+
+ajouter un context menu quand on click droit sur les canvas item, pour copier et supprimer

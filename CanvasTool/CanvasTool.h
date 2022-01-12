@@ -21,7 +21,11 @@ class CanvasTool : public BakkesMod::Plugin::BakkesModPlugin, public BakkesMod::
 	int SelectedIndex = 0;
 	bool CanEditWhileWindowClosed = false;
 
-	std::vector<Vector2> GetNumber(Vector2 a, Vector2 b, Vector2 c);
+	std::vector<std::string> GetDrives();
+
+	std::vector<Vector2> GetTriangleSelectedBoxPos(Vector2 a, Vector2 b, Vector2 c);
+	std::vector<Vector2> GetRectSelectedBoxPos(Vector2 rectpos, Vector2 rectmax);
+	bool GetImageSize(const char* fn, int* x, int* y);
 
 	//Canvas
 	std::vector<std::shared_ptr<CanvasItem>> CanvasItems;
@@ -50,6 +54,12 @@ class CanvasTool : public BakkesMod::Plugin::BakkesModPlugin, public BakkesMod::
 
 	virtual void RenderCanvasItems();
 	virtual void RenderCanvasItemDetails();
+
+	virtual void renderFileExplorer(std::shared_ptr<CanvasDrawTexture> drawTexture);
+	virtual void renderFileExplorer(std::shared_ptr<CanvasDrawTile> drawTile);
+	virtual void renderFileExplorer(std::shared_ptr<CanvasDrawRotatedTile> drawRotatedTile);
+
+	void AlignRightNexIMGUItItem(float itemWidth, float borderGap);
 
 	//Render the differents canvas items details
 	virtual void RenderStringDetails(std::shared_ptr<CanvasDrawString> drawString);
